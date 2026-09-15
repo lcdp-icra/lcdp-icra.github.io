@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <title>Manipulation Primitive and Short Contexts</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="appendix.css" />
+</head>
+<body>
+  <div class="topbar">
+    <nav class="sitenav" aria-label="Appendix navigation">
+      <a href="index.html">Home</a>
+      <span class="sep"></span>
+      <a href="appendix-cross-attention.html">Cross-Attention Conditioning</a>
+      <a href="appendix-variable-history.html">Variable History Training Ablations</a>
+      <a href="appendix-grasp-short-context.html" aria-current="page">Manipulation Primitive and Short Contexts</a>
+      <a href="appendix-experiments-discussion.html">Additional Experiments and Discussion</a>
+      <a href="appendix-policy-task-details.html">Policy and Task Details</a>
+    </nav>
+  </div>
+
+  <header class="apx-hero">
+    <div class="container">
+      <h1>Manipulation Primitive and Short Contexts</h1>
+    </div>
+  </header>
+
+  <main class="apx">
+    <h2>A. Impact of Grasp as Manipulation Primitive</h2>
+    <p>Tasks like <b>lift</b> and <b>grasp-and-return</b> show reasonable long-context performance even
+    in the low data regime (<span class="m">N/2</span>). We speculate that this is because these tasks
+    involve locally stable manipulation primitives, and policies can perform well despite errors in
+    manipulation.</p>
+
+    <figure class="apx-fig">
+      <img src="figures/appendix/grasp-and-return-brick-position.png" alt="Gripper contact position relative to brick centre" style="max-width:520px;margin:0 auto;" />
+      <figcaption><span class="fignum">Figure 1.</span> During data collection, the robot grippers make
+      contact with the brick along its central axis while grasping. At inference time, however, the
+      policy commands grippers to make contact away from the center location, indicating error in
+      learning the manipulation skills from data. However, because this task is locally stable, despite
+      this error policies perform well. This task thus shows lower sample complexity for long-context
+      learning.</figcaption>
+    </figure>
+
+    <p>To support our claim, we study <em>how well a long-context policy learned to grasp</em> for the
+    <b>grasp-and-return</b> task in the <span class="m">N</span> data regime. We examine the grasping
+    skill learned by comparing the location where the gripper makes contact with the brick relative to
+    the center of the brick. Training data has the gripper making contact at the center of the brick
+    (we can control for this as the data is synthetically generated with a heuristic method). We show
+    the mean and median absolute value of gripper contact location with respect to the center of the
+    brick at inference time in Table&nbsp;1. Despite having errors of more than 1&nbsp;cm, the task
+    shows success at long contexts. This shows that for tasks where it is possible to succeed even with
+    significant errors in the learned manipulation skill, long-context policies are able to learn even
+    at low sample complexity.</p>
+
+    <div class="apx-tablewrap">
+    <table style="min-width:320px;max-width:460px;">
+      <caption><span class="fignum">Table 1.</span> Mean and median of the absolute value of gripper
+      contact location offset from the center of the brick, in meters. The value for expert truth data
+      is 0. Despite most values being more than 1&nbsp;cm away from the center, long-context policies
+      succeed (<span class="m">N</span> training trajectories).</caption>
+      <thead><tr><th>Context length</th><th class="num">20</th><th class="num">24</th><th class="num">48</th></tr></thead>
+      <tbody>
+        <tr><td><b>Mean</b></td><td class="num">0.012</td><td class="num">0.014</td><td class="num">0.013</td></tr>
+        <tr><td><b>Median</b></td><td class="num">0.010</td><td class="num">0.010</td><td class="num">0.010</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <h2>B. When are Short Context Lengths Sufficient?</h2>
+    <p>We comment on the difference with respect to <b>manipulation completion</b> between
+    short-context (<span class="m">T<sub>o</sub> &isin; {4, 8}</span>) policy performance on
+    <b>push-and-return</b> vs. <b>grasp-and-return</b>. As expected, we notice good manipulation
+    completion for short-context policies on <b>push-and-return</b>. But why do they perform poorly on
+    <b>grasp-and-return</b> with respect to this metric? We qualitatively examine the rollouts and find
+    that high-level decision-making failures caused by short context lengths can cause low-level
+    control failures.</p>
+
+    <p>To illustrate this, consider a commonly observed failure case for <b>grasp-and-return</b> with
+    <span class="m">T<sub>o</sub> = 4</span>. The policy does not have enough memory to commit to a
+    subroutine (e.g., moving to the center or returning to the neutral position). This mode-switching
+    produces jittery actions that drive the robot into out-of-distribution states where its
+    manipulation abilities deteriorate. This results in unwarranted collisions, failed grasps, and
+    ultimately unsuccessful rollouts.</p>
+
+    <p>This pattern reinforces the notion that there are fundamental limitations to imitating
+    long-memory experts with short-context policies. For instance, without sufficient history, the
+    policy may lack the information to infer the latent state underlying the expert&rsquo;s
+    long-horizon behavior. Even more interestingly, the observability of this latent state can be
+    dependent on the manipulation primitive used &mdash; <b>push-and-return</b>, due to its planar
+    nature, has the pusher on different sides of the block. As a result, it is able to infer direction
+    of motion and, even with short context length, achieve high <b>manipulation completion</b>.
+    <b>Grasp-and-return</b>, on the other hand, cannot distinguish phase of motion because regardless
+    of direction of motion, grasping a block is visually similar. Consequently, overcoming these
+    failures likely requires algorithmic changes that explicitly address long-context reasoning, rather
+    than data scaling alone. These findings motivate approaches that either extend temporal context or
+    provide explicit sub-task guidance (e.g., via language).</p>
+
+    <div class="apx-pager">
+      <a href="appendix-variable-history.html">&larr; Variable History Training Ablations</a>
+      <a href="appendix-experiments-discussion.html">Additional Experiments and Discussion &rarr;</a>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>Anonymous submission &middot; under review</p>
+    </div>
+  </footer>
+</body>
+</html>

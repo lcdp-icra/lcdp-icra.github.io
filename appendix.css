@@ -1,0 +1,158 @@
+/* Appendix pages — layered on top of style.css, reusing its custom properties. */
+
+:root {
+  --apx-max: 940px;
+}
+
+/* ---- Site-wide nav (Home + appendix tabs) ---- */
+.sitenav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: center;
+  padding: 7px 12px;
+  background: var(--card-bg);
+  border-bottom: 1px solid var(--border);
+}
+.sitenav a {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-decoration: none;
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+  transition: background .15s, color .15s, border-color .15s;
+}
+.sitenav a:hover { color: var(--accent); background: #fff; border-color: var(--border); }
+.sitenav a[aria-current="page"] {
+  color: #fff;
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.sitenav .sep { width: 1px; background: var(--border); margin: 2px 6px; align-self: stretch; }
+
+/* ---- Appendix header ---- */
+.apx-hero {
+  padding: 34px 0 22px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(180deg, var(--card-bg), #fff);
+}
+.apx-hero .container { max-width: var(--apx-max); }
+.apx-kicker {
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 7px;
+}
+.apx-hero h1 {
+  font-size: clamp(1.5rem, 3.4vw, 2.1rem);
+  line-height: 1.2;
+  margin: 0 0 10px;
+  color: var(--fg);
+}
+.apx-hero .apx-lead { color: var(--muted); font-size: 0.97rem; margin: 0; max-width: 72ch; }
+
+/* ---- Appendix body ---- */
+.apx { max-width: var(--apx-max); margin: 0 auto; padding: 26px 20px 60px; }
+.apx h2 {
+  font-size: 1.22rem;
+  margin: 34px 0 10px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid var(--border);
+  color: var(--fg);
+}
+.apx h2:first-child { margin-top: 6px; }
+.apx h3 { font-size: 1.02rem; margin: 22px 0 7px; color: var(--fg); }
+.apx p { line-height: 1.68; color: var(--fg); margin: 0 0 13px; }
+.apx ul, .apx ol { line-height: 1.68; padding-left: 1.3em; margin: 0 0 13px; }
+.apx li { margin-bottom: 7px; }
+.apx b, .apx strong { color: var(--fg); }
+
+/* Figures */
+.apx-fig { margin: 22px 0; }
+.apx-fig img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+}
+.apx-fig figcaption {
+  font-size: 0.85rem;
+  color: var(--muted);
+  line-height: 1.55;
+  margin-top: 9px;
+}
+.apx-fig figcaption .fignum { font-weight: 700; color: var(--fg); }
+.apx-grid { display: grid; gap: 14px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.apx-grid.one { grid-template-columns: 1fr; }
+.apx-grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.apx-grid figcaption { margin-top: 6px; font-size: 0.8rem; }
+@media (max-width: 720px) {
+  .apx-grid, .apx-grid.three { grid-template-columns: 1fr; }
+}
+
+/* Tables — wide ones scroll rather than breaking the page */
+.apx-tablewrap { overflow-x: auto; margin: 18px 0; }
+.apx table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.87rem;
+  min-width: 460px;
+}
+.apx caption {
+  caption-side: top;
+  text-align: left;
+  font-size: 0.85rem;
+  color: var(--muted);
+  line-height: 1.55;
+  padding-bottom: 9px;
+}
+.apx caption .fignum { font-weight: 700; color: var(--fg); }
+.apx th, .apx td { padding: 7px 11px; text-align: left; }
+.apx thead th { border-bottom: 2px solid var(--fg); font-weight: 700; color: var(--fg); }
+.apx tbody tr + tr td { border-top: 1px solid var(--border); }
+.apx tbody tr:last-child td { border-bottom: 2px solid var(--fg); }
+.apx td.num, .apx th.num { text-align: center; font-variant-numeric: tabular-nums; }
+.apx tr.grouprow td { font-style: italic; color: var(--muted); background: var(--card-bg); }
+
+/* Callout for "this content is from the paper appendix" */
+.apx-note {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 6px;
+  padding: 12px 15px;
+  font-size: 0.88rem;
+  color: var(--muted);
+  line-height: 1.6;
+  margin: 0 0 24px;
+}
+
+/* Prev / next footer nav */
+.apx-pager {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 46px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+  font-size: 0.88rem;
+}
+.apx-pager a { color: var(--accent); text-decoration: none; font-weight: 600; }
+.apx-pager a:hover { text-decoration: underline; }
+.apx-pager span { color: var(--muted); }
+
+/* Inline math-ish notation */
+.apx code, .apx .m {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.92em;
+  background: var(--card-bg);
+  padding: 1px 5px;
+  border-radius: 4px;
+}

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <title>Variable History Training Ablations</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="appendix.css" />
+</head>
+<body>
+  <div class="topbar">
+    <nav class="sitenav" aria-label="Appendix navigation">
+      <a href="index.html">Home</a>
+      <span class="sep"></span>
+      <a href="appendix-cross-attention.html">Cross-Attention Conditioning</a>
+      <a href="appendix-variable-history.html" aria-current="page">Variable History Training Ablations</a>
+      <a href="appendix-grasp-short-context.html">Manipulation Primitive and Short Contexts</a>
+      <a href="appendix-experiments-discussion.html">Additional Experiments and Discussion</a>
+      <a href="appendix-policy-task-details.html">Policy and Task Details</a>
+    </nav>
+  </div>
+
+  <header class="apx-hero">
+    <div class="container">
+      <h1>Variable History Training Ablations</h1>
+    </div>
+  </header>
+
+  <main class="apx">
+    <p>In the main paper we show significant improvements in the <span class="m">N/2</span> data
+    regime, choosing <b>progressive</b> for <span class="m">&rho;<sub>i</sub></span> and <b>short</b>
+    past action prediction horizon. In Figure&nbsp;1, we show results for the <span class="m">N</span>
+    data regime as well as for other combinations.</p>
+
+    <p>We note that <b>progressive+short</b> shows performance gains in the three tasks in the
+    <span class="m">N/2</span> data regime. With <span class="m">N</span> trajectories, it shows
+    improvement in <b>push-T</b> and <b>square</b> (where long-context policies still show scope for
+    improvement), and maintains performance for <b>push-and-return</b>. Note that naively scaling
+    context length showed a drop in performance in the <span class="m">N/2</span> regime for all these
+    tasks. However, in the <span class="m">N</span> data regime, we saw a drop only for <b>push-T</b>
+    and <b>square</b>, but rather rising/maintained performance for <b>push-and-return</b> as context
+    length was increased. While <b>progressive+short</b> maintains performance in the
+    <span class="m">N</span> data regime, <b>random sprinkle+full</b> shows improved performance.</p>
+
+    <figure class="apx-fig">
+      <div class="apx-grid">
+        <figure style="margin:0"><img src="figures/solutions/variable_training_plots/appendix_study/push_t_variable_vs_cross_halfN.jpg" alt="Push-T N/2" /><figcaption><b>(a)</b> push-T, N/2</figcaption></figure>
+        <figure style="margin:0"><img src="figures/solutions/variable_training_plots/appendix_study/push_t_variable_vs_cross_N.jpg" alt="Push-T N" /><figcaption><b>(b)</b> push-T, N</figcaption></figure>
+        <figure style="margin:0"><img src="figures/solutions/variable_training_plots/appendix_study/square_variable_vs_cross_halfN.jpg" alt="Square N/2" /><figcaption><b>(c)</b> square, N/2</figcaption></figure>
+        <figure style="margin:0"><img src="figures/solutions/variable_training_plots/appendix_study/square_variable_vs_cross_N.jpg" alt="Square N" /><figcaption><b>(d)</b> square, N</figcaption></figure>
+        <figure style="margin:0"><img src="figures/solutions/variable_training_plots/appendix_study/push_and_return_strong_variable_vs_cross_halfN_A.jpg" alt="Push-and-return N/2" /><figcaption><b>(e)</b> push-and-return, N/2</figcaption></figure>
+        <figure style="margin:0"><img src="figures/solutions/variable_training_plots/appendix_study/push_and_return_strong_variable_vs_cross_N_A.jpg" alt="Push-and-return N" /><figcaption><b>(f)</b> push-and-return, N</figcaption></figure>
+      </div>
+      <figcaption><span class="fignum">Figure 1.</span> Comparison of <b>UNet+Cross-Attention</b>,
+      <b>UNet+FiLM</b>, and <b>variable history training</b> across tasks (data scale
+      <span class="m">N/2</span> in the left column and <span class="m">N</span> in the right column).
+      Variable history methods are trained at <span class="m">T<sub>o</sub>=20</span> for <b>square</b>
+      and <b>push-T</b>, and at <span class="m">T<sub>o</sub>=80</span> for <b>push-and-return</b>. For
+      an appropriate choice of hyperparameters, the long-context model matches short-context performance
+      in the low data regime, and doesn&rsquo;t degrade performance in the ideal data regime.</figcaption>
+    </figure>
+
+    <p>We confirm this by investigating these methods on <b>grasp-and-return</b>, where even the
+    <span class="m">N/2</span> data regime shows good performance with naive context length scaling.
+    Intuitively, <b>random sprinkle+full</b> should be the best method. That is exactly what we notice
+    in Figure&nbsp;2, where in both <span class="m">N/2</span> and <span class="m">N</span> data
+    regimes, <b>random sprinkle+full</b> performs best.</p>
+
+    <figure class="apx-fig">
+      <div class="apx-grid">
+        <figure style="margin:0"><img src="figures/solutions/variable_training_plots/appendix_study/grasp_and_return_variable_vs_cross_halfN_A.jpg" alt="Grasp-and-return N/2" /><figcaption><b>(a)</b> N/2 data regime</figcaption></figure>
+        <figure style="margin:0"><img src="figures/solutions/variable_training_plots/appendix_study/grasp_and_return_variable_vs_cross_N_A.jpg" alt="Grasp-and-return N" /><figcaption><b>(b)</b> N data regime</figcaption></figure>
+      </div>
+      <figcaption><span class="fignum">Figure 2.</span> Variable history training for the
+      <b>grasp-and-return</b> task, where naive history scaling is always sufficient for task success.
+      Given that, we find <b>random sprinkle+full</b> to be the best method even in the
+      <span class="m">N/2</span> data regime.</figcaption>
+    </figure>
+
+    <p>Thus, we recommend using <b>progressive+short</b> when naive scaling performs worse compared to
+    short context length, but <b>random sprinkle+full</b> when data is sufficient for naive history
+    scaling.</p>
+
+    <div class="apx-pager">
+      <a href="appendix-cross-attention.html">&larr; Cross-Attention Conditioning</a>
+      <a href="appendix-grasp-short-context.html">Manipulation Primitive and Short Contexts &rarr;</a>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>Anonymous submission &middot; under review</p>
+    </div>
+  </footer>
+</body>
+</html>

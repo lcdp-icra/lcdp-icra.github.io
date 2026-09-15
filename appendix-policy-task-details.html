@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <title>Policy and Task Details</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="appendix.css" />
+</head>
+<body>
+  <div class="topbar">
+    <nav class="sitenav" aria-label="Appendix navigation">
+      <a href="index.html">Home</a>
+      <span class="sep"></span>
+      <a href="appendix-cross-attention.html">Cross-Attention Conditioning</a>
+      <a href="appendix-variable-history.html">Variable History Training Ablations</a>
+      <a href="appendix-grasp-short-context.html">Manipulation Primitive and Short Contexts</a>
+      <a href="appendix-experiments-discussion.html">Additional Experiments and Discussion</a>
+      <a href="appendix-policy-task-details.html" aria-current="page">Policy and Task Details</a>
+    </nav>
+  </div>
+
+  <header class="apx-hero">
+    <div class="container">
+      <h1>Policy and Task Details</h1>
+    </div>
+  </header>
+
+  <main class="apx">
+    <h2>A. Overview</h2>
+    <p>Diffusion Policy is a state-of-the-art behavior cloning method introduced by Chi et al. (2024),
+    which learns the observation-conditional action distribution by minimizing the action prediction
+    loss</p>
+
+    <div class="apx-note" style="border-left-color:var(--muted);text-align:center;font-size:0.95rem;">
+      <span class="m">L<sub>D</sub>(&theta;) = E<sub>k,(o,a)~D,&epsilon;~N(0,I)</sub>
+      &#8214; &epsilon; &minus; &epsilon;<sub>&theta;</sub>(&alpha;<sub>k</sub>a + &sigma;<sub>k</sub>&epsilon;, o, k) &#8214;<sup>2</sup><sub>2</sub></span>
+    </div>
+
+    <p>where <span class="m">&alpha;<sub>k</sub></span> and <span class="m">&sigma;<sub>k</sub></span>
+    are parameters related to the diffusion noise schedule (<span class="m">k</span> represents the
+    diffusion timestep). Essentially, the model learns to regress over noisy versions of action chunks
+    from observation and diffusion timestep input, and at inference time uses a denoiser to
+    conditionally sample from the action chunk distribution.</p>
+
+    <p>Diffusion Policy is implemented through a combination of observation encoder and action
+    denoising backbone. As a summary: each camera <span class="m">c</span> produces an image stream
+    comprising <span class="m">T<sub>o</sub></span> images. For each stream, an image encoder converts
+    each of these images into latent embeddings. <em>Note that the same vision backbone is used for
+    all timesteps for each camera stream.</em> These embeddings, concatenated with the diffusion
+    timestep embedding and robot proprioception, are passed to the downstream model for conditioning.
+    Common choices for the downstream conditioning model are <b>UNet</b> and <b>DiT</b>. Various
+    methods like FiLM (Perez et al., 2017) and cross-attention can be applied to merge the
+    conditioning with the denoiser.</p>
+
+    <p>We choose ResNet18 (He et al., 2015) as our image embedding backbone. Unless noted otherwise in
+    the specific sections, the ResNet18 version from robomimic (Mandlekar et al.) is trained from
+    scratch for our policies, with random weight initialization.</p>
+
+    <h2>B. Comparison of Diffusion Policy Architectures</h2>
+    <p>Diffusion Policy was presented with the <b>UNet+FiLM</b> and <b>DiT</b> architectures in the
+    original work. For single-task RGB policies with short context lengths, <b>UNet+FiLM</b>
+    outperformed the <b>DiT</b> model for the given design choices and hyperparameters. Therefore, it
+    became the choice for many works building on diffusion policy. In this work, we suggest using
+    <b>UNet+Cross-Attention</b> as the method for training single-task long-context diffusion policies
+    from scratch in the limited-data regime.</p>
+
+    <p>As an assistance to the reader, we now provide an overview of the 3 methods. All methods involve
+    passing observation inputs through an encoder that is shared across timesteps, but is often
+    different for cameras (though it can be the same). After that, each observation embedding is
+    concatenated with the corresponding proprioception information. The 3 architectures compared in
+    this work differ in flow beyond this point:</p>
+
+    <ul>
+      <li><b>UNet+FiLM</b>: The observation embeddings from each timestep and each camera are
+      concatenated into one long vector. A diffusion timestep embedding is further concatenated to
+      this. The action denoising backbone is made of a UNet with intermediate 1D convolution layers.
+      The long vector is projected to dimensions matching these layers through separate MLPs, and
+      merged via FiLM, where a scale and bias are both applied.</li>
+      <li><b>UNet+Cross-Attention</b>: The observation embeddings from each timestep are concatenated
+      across cameras and proprioception, but remain separate for different timesteps. Diffusion time
+      embedding is projected to matching dimension. A position encoding is added. Each of these
+      embeddings is then individually projected to intermediate UNet layer dimensions, and
+      cross-attended to with the intermediate UNet layers.</li>
+      <li><b>DiT</b>: The action denoising backbone is now provided by transformer decoder layers as
+      opposed to UNet. Conditioning is merged via cross-attention.</li>
+    </ul>
+
+    <p>We note that the <b>DiT</b> model from the original work, as well as from key long-context
+    learning work from Torne et al. (2025), uses hyperparameters which result in a model significantly
+    smaller in size than other choices. If we use their hyperparameters, we notice extremely low
+    success rates in some tasks even with short context lengths. Very specifically, we notice
+    reasonable performance on robomimic tasks, but almost catastrophic performance on tasks
+    implemented in Drake. We therefore add more decoder layers, providing the model a number of
+    parameters similar in magnitude to the other architectures we have used.</p>
+
+    <p>Moreover, a key change in our experiments for <b>DiT</b> is not using causal attention within
+    the action chunk. Both Chi et al. (2024) and Torne et al. (2025) apply causal attention within an
+    action chunk as it is denoised (so earlier elements of the action chunk cannot be influenced by
+    later elements). We remove this flag, to make the flow of information more comparable to that of
+    the <b>UNet</b>. Finally, we evaluate the <b>DiT</b> with additional steps of sampling compared to
+    the UNet models, to eliminate the possibility of sampling error driving the difference in
+    performance.</p>
+
+    <p>Finally, while we have not seen this in robotics policies, merging conditioning via
+    cross-attention instead of FiLM has been used in computer vision before (Rombach et al., 2022).</p>
+
+    <h2>C. Training Details and Hyperparameters</h2>
+    <h3>C.1 Checkpoint Selection</h3>
+    <p>We designate a maximum number of training steps for each task based on approximate policy
+    performance to convergence for short-context policies at <span class="m">N</span> training
+    trajectories. We then train policies with all context lengths for that task to those many training
+    steps, saving the top 5 checkpoints with respect to validation loss, the top 5 checkpoints with
+    respect to action-matching validation loss, and 3 evenly spaced checkpoints toward the end of
+    training. We then evaluate each checkpoint, and the highest success rate among checkpoints is
+    reported as the success rate for the training run. For our hardware evaluation on the
+    <b>marshmallows</b> task, we simply use the latest checkpoint.</p>
+
+    <p>We train all <b>push-T</b> policies for 150k steps; <b>marshmallows</b>, <b>square</b>,
+    <b>lift</b>, and <b>push-and-return</b> policies for 200k steps; and <b>grasp-and-return</b>
+    policies for 100k steps. We start with a learning rate of <code>1e-4</code> and use
+    <code>cosine</code> decay. For some policies (like <b>UNet+FiLM</b> and <b>UNet+Cross-Attention</b>
+    on <b>push-T</b>, and <b>UNet+FiLM</b> on <b>push-and-return</b>), we only save the latest
+    checkpoint as opposed to 3 recent toward the end, because the results are largely insensitive to
+    this choice and we did not rerun these configurations due to the high computational cost. We did
+    rerun it for the <span class="m">N</span> data regime in <b>push-and-return</b> for
+    <b>UNet+FiLM</b>, and found the presented trends to be consistent.</p>
+
+    <p>We notice in our work that policies with different context lengths can sometimes converge in a
+    different number of training steps. For instance, we usually notice that especially with
+    <span class="m">N/2</span> trajectories, some policies often converge slightly sooner than those
+    for <span class="m">N</span> and <span class="m">2N</span> &mdash; an effect that is more pronounced
+    at longer context lengths. We believe earlier checkpoints at longer context lengths in the low
+    data regime help mitigate the impact of over-fitting.</p>
+
+    <p>Each reported success rate is from one training run. While we do account for uncertainty in the
+    binary task success, we do not, in this work, account for uncertainty in training randomness. Due
+    to limited availability of resources and the high amount of training time needed to produce a study
+    of this magnitude, such a choice is consistent with prior work.</p>
+
+    <h3>C.2 Hyperparameters</h3>
+    <p>In Table&nbsp;1 we present the hyperparameters used for the main results. By design, FiLM
+    conditioning model size changes considerably as context length is increased. On the contrary,
+    <b>UNet+Cross-Attention</b> and <b>DiT</b> have similar model sizes across context lengths due to
+    the manner of applying conditioning. We choose the size of the cross-attention model to be roughly
+    halfway between the smallest and largest used FiLM model. For <b>DiT</b>, we get a model comparable
+    in size to the cross-attention model after adding significantly more layers.</p>
+
+    <div class="apx-tablewrap">
+    <table>
+      <caption><span class="fignum">Table 1.</span> Architecture-specific hyperparameters for the three
+      denoisers. Values not applicable to a given architecture are marked &ldquo;&ndash;&rdquo;.</caption>
+      <thead>
+        <tr><th></th><th class="num">UNet+FiLM</th><th class="num">UNet+xAttn</th><th class="num">DiT</th></tr>
+      </thead>
+      <tbody>
+        <tr class="grouprow"><td colspan="4">Denoiser core</td></tr>
+        <tr><td>Conditioning mechanism</td><td class="num">FiLM (global)</td><td class="num">Cross-attention (token seq.)</td><td class="num">Cross-attention (token seq.)</td></tr>
+        <tr><td>UNet down channels</td><td class="num">[256, 512, 1024]</td><td class="num">[256, 512, 1024]</td><td class="num">&ndash;</td></tr>
+        <tr><td>Conv kernel size</td><td class="num">5</td><td class="num">5</td><td class="num">&ndash;</td></tr>
+        <tr><td>GroupNorm groups</td><td class="num">8</td><td class="num">8</td><td class="num">&ndash;</td></tr>
+        <tr class="grouprow"><td colspan="4">Approximate parameter counts</td></tr>
+        <tr><td>Denoiser parameters</td><td class="num">&asymp;67M at h<sub>y</sub>=2 to &asymp;212M at h<sub>y</sub>=80</td><td class="num">&asymp;129M</td><td class="num">&asymp;109M</td></tr>
+        <tr><td>Encoder parameters</td><td class="num">22.4M</td><td class="num">22.4M</td><td class="num">22.4M</td></tr>
+        <tr><td>Total parameters</td><td class="num">&asymp;89M at h<sub>y</sub>=2 to &asymp;235M at h<sub>y</sub>=80</td><td class="num">151M</td><td class="num">131M</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <p>Task-specific hyperparameters are available in Table&nbsp;2. Each task differs in image
+    resolution, crop size, action dimensionality, the set of observation horizons we sweep, the number
+    of training demonstrations used, and the total number of training steps. Total training steps are
+    matched between baselines and ablations to ensure a fair comparison.</p>
+
+    <p>Our models are designed such that the time dimension of the trajectory being denoised needs to
+    be a multiple of 4. We select a total denoising horizon such that the length of the predicted
+    future is roughly 16 while retaining full past action prediction and having the total length a
+    multiple of 4. Thus, for context length 1 our horizon is 16; for 2 it is also 16; for context
+    length 5 it is 20; and for context length 10 it is 24. If the context length is a multiple of 4,
+    the horizon is simply context length + 16.</p>
+
+    <div class="apx-tablewrap">
+    <table>
+      <caption><span class="fignum">Table 2.</span> Some details specific to the task evaluated.</caption>
+      <thead>
+        <tr>
+          <th>Setting</th><th class="num">Push-T</th><th class="num">Push-and-return</th>
+          <th class="num">Grasp-and-return</th><th class="num">Marshmallows (hardware)</th>
+          <th class="num">Square (robomimic)</th><th class="num">Lift (robomimic)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Image input (H&times;W)</td><td class="num">128&times;128</td><td class="num">128&times;128</td><td class="num">128&times;128</td><td class="num">128&times;128</td><td class="num">84&times;84</td><td class="num">84&times;84</td></tr>
+        <tr><td>Crop (H&times;W)</td><td class="num">112&times;112</td><td class="num">112&times;112</td><td class="num">112&times;112</td><td class="num">112&times;112</td><td class="num">76&times;76</td><td class="num">76&times;76</td></tr>
+        <tr><td>Cameras</td><td class="num">overhead, wrist</td><td class="num">overhead, wrist</td><td class="num">overhead, wrist</td><td class="num">overhead, wrist</td><td class="num">agentview, eye-in-hand</td><td class="num">agentview, eye-in-hand</td></tr>
+        <tr><td>Proprioception dim</td><td class="num">3</td><td class="num">2</td><td class="num">13</td><td class="num">13</td><td class="num">9</td><td class="num">9</td></tr>
+        <tr><td>Action dim</td><td class="num">2</td><td class="num">2</td><td class="num">13</td><td class="num">13</td><td class="num">10</td><td class="num">10</td></tr>
+        <tr><td>Context length swept (h<sub>y</sub>)</td><td class="num">1, 2, 5, 10, 12, 16, 20</td><td class="num">4, 8, 32, 60, 72, 80</td><td class="num">4, 8, 16, 20, 24, 48</td><td class="num">92</td><td class="num">1, 2, 5, 10, 12, 16, 20</td><td class="num">1, 2, 5, 10, 12, 16, 20</td></tr>
+        <tr><td>Future chunk length h<sub>u</sub></td><td class="num">h<sub>y</sub>+14 to h<sub>y</sub>+16</td><td class="num">h<sub>y</sub>+16</td><td class="num">h<sub>y</sub>+16</td><td class="num">h<sub>y</sub>+16</td><td class="num">h<sub>y</sub>+14 to h<sub>y</sub>+16</td><td class="num">h<sub>y</sub>+14 to h<sub>y</sub>+16</td></tr>
+        <tr><td>Data (low / usual / high)</td><td class="num">80 / 160 / 320</td><td class="num">24 / 48 / 96</td><td class="num">12 / 24 / 48</td><td class="num">100</td><td class="num">50 / 100 / 200</td><td class="num">25 / 50 / 100</td></tr>
+        <tr><td>Total training steps</td><td class="num">1.5&times;10<sup>5</sup></td><td class="num">2&times;10<sup>5</sup></td><td class="num">1&times;10<sup>5</sup></td><td class="num">2&times;10<sup>5</sup></td><td class="num">2&times;10<sup>5</sup></td><td class="num">2&times;10<sup>5</sup></td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <p>While this is an accurate tabular representation, the policy design involves many more
+    hyperparameters which cannot be best captured in this manner. We therefore refer the reader to the
+    codebase for the updated and most accurate configuration files corresponding to our experiments.</p>
+
+    <h2>D. Training Data per Task</h2>
+    <p>The value of <span class="m">N</span> used for each task is indicated in Table&nbsp;3. We then
+    present further details about data collection and evaluation for all the tasks.</p>
+
+    <div class="apx-tablewrap">
+    <table style="min-width:320px;max-width:420px;">
+      <caption><span class="fignum">Table 3.</span> Number of training trajectories chosen as
+      <span class="m">N</span> for different tasks. The values for benchmark tasks are chosen to be
+      consistent with prior work.</caption>
+      <thead><tr><th>Task</th><th class="num">Value of N</th></tr></thead>
+      <tbody>
+        <tr><td><b>push-T</b></td><td class="num">160</td></tr>
+        <tr><td><b>robomimic square</b></td><td class="num">100</td></tr>
+        <tr><td><b>robomimic lift</b></td><td class="num">50</td></tr>
+        <tr><td><b>push-and-return</b></td><td class="num">48</td></tr>
+        <tr><td><b>grasp-and-return</b></td><td class="num">24</td></tr>
+        <tr><td><b>marshmallows</b></td><td class="num">100</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <figure class="apx-fig">
+      <div class="apx-grid three">
+        <figure style="margin:0"><img src="figures/appendix/task_images/push_and_return.png" alt="Push-and-return environment" /><figcaption><b>(a)</b> Push-and-return</figcaption></figure>
+        <figure style="margin:0"><img src="figures/appendix/task_images/grasp_and_return.png" alt="Grasp-and-return environment" /><figcaption><b>(b)</b> Grasp-and-return</figcaption></figure>
+        <figure style="margin:0"><img src="figures/appendix/task_images/hardware_marshmallows_setup.png" alt="Marshmallows hardware setup" /><figcaption><b>(c)</b> Marshmallows</figcaption></figure>
+      </div>
+      <figcaption><span class="fignum">Figure 1.</span> Environments for tasks requiring long context
+      length for success.</figcaption>
+    </figure>
+
+    <h2>E. Task and Data Collection Descriptions</h2>
+    <p><b>Push-T:</b> Observations are images <em>(from pixels)</em> and robot proprioception, whereas
+    actions are a chunk of the next planar location of the cylindrical end effector. The dataset for
+    this task was collected using teleoperation. We choose <span class="m">N = 160</span>.</p>
+
+    <p><b>Robomimic tasks:</b> We use the proficient human dataset. Further details on the environments
+    are available via <b>robomimic</b>. We choose <span class="m">N = 100</span> for <b>square</b> and
+    <span class="m">N = 50</span> for <b>lift</b>.</p>
+
+    <p><b>Push-and-return:</b> Observation and action space are the same as defined above for
+    <b>push-T</b>. We collect data for this task via teleoperation in simulation. For each mode, we
+    collect two datasets: (i) by randomly initializing the block in that location and completing the
+    task via teleoperation, and (ii) by mirroring tele-operated roll-outs from the symmetrically
+    opposite mode. This allows us to ensure coherent data across symmetric modes, and eliminate
+    inconsistent teleoperation as a source of learning discrepancy. We use a two-mode version for all
+    the demonstrated comparisons and leave it to future work to evaluate the same task with more return
+    modes. Such a future experiment can provide insight on increasing combinatorial complexity while
+    keeping local complexity the same. We choose <span class="m">N = 48</span>.</p>
+
+    <p><b>Grasp-and-return:</b> Observations remain the same as in push-and-return, but the action is
+    now 6-DOF end-effector pose as opposed to planar location as in previous cases. Data for this task
+    is generated in simulation using a heuristic method. We choose <span class="m">N = 24</span>.</p>
+
+    <p><b>Marshmallows:</b> This task requires moving two handfuls of marshmallows to a target bowl
+    from a supply bowl, and then signaling task completion by pressing a button (we represent this by
+    the gripper closing and reaching a small platform of red blocks). We adapt this task on our
+    hardware from Mark et al. (2026), who in turn adapted it from a task in Torne et al. (2025). We
+    collect data using teleoperation via VR. Observations are provided via one overhead camera and one
+    wrist camera. Action space is the same as in <b>grasp-and-return</b>. We choose
+    <span class="m">N = 100</span>.</p>
+
+    <h2>F. Evaluation Details</h2>
+    <p>Reported success rates are out of 200 trials for simulated tasks, with error bars representing
+    95% Wilson score confidence intervals.</p>
+
+    <p><b>Push-T:</b> Specific evaluation details for this task are based on prior work.</p>
+
+    <p><b>Push-and-return:</b> In the 2-mode case, we conduct 100 trials with the block originating on
+    either side. The time limit is set to 50&nbsp;s. The block is considered moved to the middle and
+    back to either location if it overlaps by more than 95% of its area with the marker for that
+    location.</p>
+
+    <p><b>Grasp-and-return:</b> We conduct 100 trials with the brick originating on either side. The
+    brick is considered moved to the center if it makes contact with the table space between the mats
+    on either side. The brick is considered returned to a location if it is returned to anywhere on the
+    mat from which it originated.</p>
+
+    <p><b>Marshmallows:</b> We conduct 20 trials on hardware. The number of marshmallows at the start of
+    the task in the target bowl can be arbitrary (consistent with data collection, and makes the task
+    challenging in terms of memory).</p>
+
+    <div class="apx-pager">
+      <a href="appendix-experiments-discussion.html">&larr; Additional Experiments and Discussion</a>
+      <span>&nbsp;</span>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>Anonymous submission &middot; under review</p>
+    </div>
+  </footer>
+</body>
+</html>

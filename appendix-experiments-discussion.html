@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <title>Additional Experiments and Discussion</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="appendix.css" />
+</head>
+<body>
+  <div class="topbar">
+    <nav class="sitenav" aria-label="Appendix navigation">
+      <a href="index.html">Home</a>
+      <span class="sep"></span>
+      <a href="appendix-cross-attention.html">Cross-Attention Conditioning</a>
+      <a href="appendix-variable-history.html">Variable History Training Ablations</a>
+      <a href="appendix-grasp-short-context.html">Manipulation Primitive and Short Contexts</a>
+      <a href="appendix-experiments-discussion.html" aria-current="page">Additional Experiments and Discussion</a>
+      <a href="appendix-policy-task-details.html">Policy and Task Details</a>
+    </nav>
+  </div>
+
+  <header class="apx-hero">
+    <div class="container">
+      <h1>Additional Experiments and Discussion</h1>
+    </div>
+  </header>
+
+  <main class="apx">
+    <h2>A. Reasons for Long-Context Failure</h2>
+    <p>We saw how long-context policies do not show catastrophic failure in most cases. However,
+    especially in the low data regime (<span class="m">N/2</span> trajectories), long-context policies
+    still perform worse than short-context ones for some tasks. In this section, we further diagnose
+    the reasons behind these behaviors.</p>
+
+    <h3>A.1 Training and test loss</h3>
+    <p>All saved checkpoints are evaluated and the success rate of the best checkpoint is reported. We
+    note that <em>because the work presented in this section has only been done for one training run,
+    the results can be noisy</em>.</p>
+
+    <figure class="apx-fig">
+      <div class="apx-grid">
+        <figure style="margin:0"><img src="figures/appendix/scratch_loss_vs_success_unet_film_data50_train.jpg" alt="Training loss vs success rate" /><figcaption><b>(a)</b> Training loss vs. success rate</figcaption></figure>
+        <figure style="margin:0"><img src="figures/appendix/scratch_loss_vs_success_unet_film_data50_val.jpg" alt="Validation loss vs success rate" /><figcaption><b>(b)</b> Validation loss vs. success rate</figcaption></figure>
+      </div>
+      <figcaption><span class="fignum">Figure 1.</span> <b>Relationship between loss and success rate
+      for the square task across checkpoints.</b></figcaption>
+    </figure>
+
+    <p>Some architectures like <b>UNet+FiLM</b> show a sharper drop as context length is increased
+    compared to <b>UNet+Cross-Attention</b>. For <b>UNet+FiLM</b>, consider Figure&nbsp;1, which
+    compares the training and validation loss respectively against the success rate for all checkpoints
+    saved during training for the <b>square</b> task trained with <span class="m">N/2</span>
+    trajectories. As context length increases from short to long, checkpoint clusters shift downward
+    and leftward: both training and validation loss decrease overall, but so does the success rate.</p>
+
+    <p>The trend with training loss shows a standard over-fitting problem: policies fit the training
+    data better in higher dimensions, but this is not sufficient for closed-loop rollouts. The
+    validation loss curve hints toward an even more interesting trend seen in imitation learning:
+    long-context policies perform better on open-loop validation samples drawn from the expert
+    distribution, but perform worse when rolled out closed loop. This hints toward <em>covariate
+    shift</em> in imitation learning. Both these trends point at data scaling and relevant inductive
+    biases as favorable solutions for long-context learning.</p>
+
+    <p>As mentioned above, we show results from one training run, so results can be noisy. The best way
+    to reproduce this experiment would be to have multiple training runs, and then average the clusters
+    from checkpoints saved during each training to produce a less noisy version of Figure&nbsp;1. This,
+    we believe, would also give more consistent results across architectures, checkpoints, and context
+    lengths, and is a very relevant direction for future work.</p>
+
+    <h3>A.2 Manipulation Skill Learning</h3>
+    <p>In the low data regime, <b>grasp-and-return</b> provides good long-context performance, whereas
+    <b>push-and-return</b> performance drops. We now comment in detail on an additional evaluation
+    criterion to investigate <em>what do policies fail to learn as context length increases?</em></p>
+
+    <p>For <b>push-and-return</b>, both <b>task success</b> and <b>manipulation completion</b> show
+    dropping performance with increasing context length in the <span class="m">N/2</span> data regime.
+    However, <b>contextual success</b> is high for long-context policies even when trained on
+    <span class="m">N/2</span> trajectories. This indicates that in the low data regime, most
+    long-context policies are failing to learn to manipulate within the constraints of the task. In
+    fact, those policies which do learn to complete manipulation also show good tracking of history.
+    Thus, long-context policies for this task fail due to difficulty learning the manipulation skill
+    within the realms of the task. Simultaneous and mirroring improvement in task success and
+    manipulation completion confirms this hypothesis.</p>
+
+    <p>We note that this simultaneous improvement between <b>task success</b> and <b>manipulation
+    completion</b> is also seen in the <b>grasp-and-return</b> task. However, both are already good for
+    this task in the low data regime, perhaps because this task builds on a locally stable manipulation
+    skill.</p>
+
+    <h2>B. Past-Token Prediction</h2>
+    <p>Torne et al. (2025) introduce predicting past action tokens as an auxiliary loss that helps with
+    long-context imitation learning. Additionally, they propose freezing the observation encoder as a
+    training-time optimization technique not impacting policy performance. In this section, we
+    independently investigate which aspect contributes to performance gains.</p>
+
+    <p>We first investigate how much past-action prediction, by itself, impacts policy performance
+    (independent of other parts of the work). Because past-action prediction wasn&rsquo;t proposed by
+    Torne et al. (2025) but rather present in the original work of Chi et al. (2024), we also
+    investigate if predicting past actions helps with short-context policy learning.</p>
+
+    <p>Investigating Figure&nbsp;2, we find that by itself, predicting past actions presents limited
+    advantages. While advantages at long context lengths are evident for <b>square</b> and
+    <b>push-and-return</b> in the <span class="m">N</span> data regime, performance is more similar in
+    the limited data case. There are also no noticeable trends for short-context policy performance.
+    Given the limited advantage which is not seen across data scale, we conclude that the benefit of
+    predicting past actions by itself is unclear for long-context learning.</p>
+
+    <figure class="apx-fig">
+      <div class="apx-grid one">
+        <figure style="margin:0"><img src="figures/solutions/ptp_study/limited_past_compare_pr_uses_strong_halfN.jpg" alt="Past-token prediction, N/2" /><figcaption><b>(a)</b> N/2 data regime</figcaption></figure>
+        <figure style="margin:0"><img src="figures/solutions/ptp_study/limited_past_compare_pr_uses_strong_N.jpg" alt="Past-token prediction, N" /><figcaption><b>(b)</b> N data regime</figcaption></figure>
+      </div>
+      <figcaption><span class="fignum">Figure 2.</span> Results of a study investigating how much past
+      action prediction helps policy learning with the <b>UNet+Cross-Attention</b> architecture. While
+      advantages at long context lengths are evident for <b>square</b> and <b>push-and-return</b> in the
+      <span class="m">N</span> data regime, performance is more similar in the limited data case. Thus,
+      overall patterns are unclear.</figcaption>
+    </figure>
+
+    <p>Next, we continue the discussion of the relative difference in policy learning between trainable
+    and frozen encoder. The main paper shows the comparison in the <span class="m">N/2</span> data
+    regime; we show the <span class="m">N</span> data regime in Figure&nbsp;3. We find that at both
+    data scales, past-action prediction and freezing the observation encoder seem to be driving each
+    other&rsquo;s success &mdash; freezing the observation encoder is not just a training technique, but
+    seems to also be responsible for improving policy performance at least to some extent. The variable
+    history comparison picks the value with the best hyperparameter (between <b>random sprinkle</b> and
+    <b>progressive</b>).</p>
+
+    <figure class="apx-fig">
+      <img src="figures/solutions/ptp_study/frozen_encoder_past_comparison_pr_uses_strong_N.jpg" alt="Frozen encoder vs past action prediction" />
+      <figcaption><span class="fignum">Figure 3.</span> Results comparing trainable and frozen
+      observation encoder (frozen from short context lengths) with past action prediction. Past-action
+      prediction and frozen observation encoder seem to be driving each other&rsquo;s success, but
+      <b>push-and-return</b> is an exception.</figcaption>
+    </figure>
+
+    <p>As a final note, Torne et al. (2025) also propose an inference-time verification technique, where
+    multiple action chunks are sampled from the policy, and the chunk with past actions most consistent
+    with the actually executed past actions is executed. We exclude this technique from our analysis
+    because it reduces inference speed as we evaluate a large number of policies, and by the
+    authors&rsquo; own admission, this helps by up to only 5%. We did run some comparisons presented in
+    Table&nbsp;1 and found that the success improvement from this technique was statistically
+    insignificant, and thus excluded it from our comparisons.</p>
+
+    <div class="apx-tablewrap">
+    <table style="min-width:340px;max-width:480px;">
+      <caption><span class="fignum">Table 1.</span> Performance with and without PTP inference-time
+      verification. Policy trained in the <span class="m">N</span> data regime at
+      <span class="m">T<sub>o</sub> = 20</span> with observation encoder frozen from the best
+      short-context policy for that task.</caption>
+      <thead><tr><th>Task</th><th class="num">With verification</th><th class="num">Without verification</th></tr></thead>
+      <tbody>
+        <tr><td>Square</td><td class="num">176/200</td><td class="num">175/200</td></tr>
+        <tr><td>Push-T</td><td class="num">190/200</td><td class="num">188/200</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <h2>C. Additional Related Works</h2>
+    <h3>C.1 Context Length in Imitation Learning</h3>
+    <p>We have already introduced and discussed the work from Torne et al. (2025), Mark et al. (2026),
+    and Sridhar et al. (2025). We now elaborate on these. <b>Mark et al. (2026)</b> suggest using a
+    pre-trained VLM to identify key events in policy history, and only conditioning the policy on
+    these VLM-identified frames. They also argue that naively increasing context length can avoid
+    failure, but focus on action chunking as the reason for this. They have a limited data-scaling
+    ablation, but it largely agrees with our results.</p>
+
+    <p>Other methods use language-based summarization of observation histories (Sridhar et al., 2025;
+    Torne et al., 2026). They keep track of historic events through language / intermediate tokens
+    summarizing the history of observations. While Sridhar et al. (2025) rely on just the most recent
+    observation for control, Torne et al. (2026) introduce video-based observation encoding for the
+    recent history. Such a method, however, would require extensive pre-training (they pre-train on
+    internet-scale data).</p>
+
+    <p><b>Song et al. (2025)</b> propose attention between noisy versions of conditioning and action
+    trajectory at training time, and temporal classifier-free guidance at sampling time. Their model,
+    however, is a video prediction model, which predicts both future actions and observations and can
+    be data- and compute-intensive.</p>
+
+    <h3>C.2 Context Length in Reinforcement Learning in Robotics</h3>
+    <p>Reinforcement learning in robotics frequently provides solutions for more dynamic tasks, and RL
+    policies therefore often use longer context lengths than seen in imitation learning (though these
+    observations are typically in joint space, unlike the RGB observations seen in imitation
+    learning). Some RL works in robotics have provided explicit comments on context length.</p>
+
+    <ul>
+      <li><b>Li et al. (2024)</b> use a context of 66 (2 seconds at 33&nbsp;Hz). Along with the entire
+      history provided as an encoded embedding, they provide the recent 4 frames directly to the base
+      model, arguing that full history and recent history are used differently and therefore recent
+      history should additionally be provided through separate channels.</li>
+      <li><b>Kumar et al. (2021)</b> split the policy into a base policy and an adaptation module. The
+      adaptation module takes a long history and produces latent embeddings at a lower frequency,
+      while the base policy only takes recent state and this latent embedding to produce control at a
+      higher frequency.</li>
+      <li><b>Peng et al. (2018)</b> and <b>Singh et al. (2023)</b> provide ablations comparing
+      feed-forward policies with history against LSTM-based policies. Peng et al. argue that a
+      non-state-history-based LSTM better generalizes to the dynamics of a physical system, while
+      Singh et al. choose a non-history-based policy as the best performer based on their
+      ablations.</li>
+    </ul>
+
+    <h3>C.3 Context Length Understanding in LLMs</h3>
+    <p>We believe the robotics community needs to build an understanding of policy learning in the
+    presence of longer contexts. The LLM community has considerable work exploring the factors that
+    impact performance of LLMs with longer conditioning contexts.</p>
+    <ul>
+      <li><b>Liu et al. (2023)</b> show that LLM performance for long-context inputs significantly
+      depends on the location of relevant information in the input. Specifically, performance degrades
+      if the most relevant information is in the middle of the model input history.</li>
+      <li><b>Li et al. (2024)</b> create a benchmark for long-context understanding in LLMs and show
+      that LLMs struggle with &ldquo;intricate long dependency tasks&rdquo;.</li>
+      <li><b>Qin et al. (2023)</b> show that certain attention mechanisms can lead to insufficient
+      attention being paid to distant tokens in longer contexts.</li>
+    </ul>
+
+    <div class="apx-pager">
+      <a href="appendix-grasp-short-context.html">&larr; Manipulation Primitive and Short Contexts</a>
+      <a href="appendix-policy-task-details.html">Policy and Task Details &rarr;</a>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>Anonymous submission &middot; under review</p>
+    </div>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <title>Cross-Attention Conditioning</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="appendix.css" />
+</head>
+<body>
+  <div class="topbar">
+    <nav class="sitenav" aria-label="Appendix navigation">
+      <a href="index.html">Home</a>
+      <span class="sep"></span>
+      <a href="appendix-cross-attention.html" aria-current="page">Cross-Attention Conditioning</a>
+      <a href="appendix-variable-history.html">Variable History Training Ablations</a>
+      <a href="appendix-grasp-short-context.html">Manipulation Primitive and Short Contexts</a>
+      <a href="appendix-experiments-discussion.html">Additional Experiments and Discussion</a>
+      <a href="appendix-policy-task-details.html">Policy and Task Details</a>
+    </nav>
+  </div>
+
+  <header class="apx-hero">
+    <div class="container">
+      <h1>Cross-Attention Conditioning</h1>
+    </div>
+  </header>
+
+  <main class="apx">
+    <p>In the main paper we establish the importance of architectural choice when comparing diffusion
+    policy performance, especially at longer context lengths. Here we present additional results
+    organized by different data scales at a given context length in Figure&nbsp;1. While <b>DiT</b>
+    shows no noticeable performance gain even in the high data regime, the performance gap between
+    <b>UNet+Cross-Attention</b> and <b>UNet+FiLM</b> shrinks as data is scaled. This reinforces the
+    notion that the cross-attention conditioning method is a favorable inductive bias.</p>
+
+    <figure class="apx-fig">
+      <img src="figures/solutions/architecture_compare_plots/title_legend.jpg" alt="Legend" style="max-width:520px;margin:0 auto 14px;border:none;" />
+      <div class="apx-grid">
+        <figure style="margin:0"><img src="figures/solutions/architecture_compare_plots/push_t_methods_vs_n_demos_x2.jpg" alt="Push-T at To=2" /><figcaption><b>(a)</b> push-T, T<sub>o</sub>=2</figcaption></figure>
+        <figure style="margin:0"><img src="figures/solutions/architecture_compare_plots/push_t_methods_vs_n_demos_x20.jpg" alt="Push-T at To=20" /><figcaption><b>(b)</b> push-T, T<sub>o</sub>=20</figcaption></figure>
+        <figure style="margin:0"><img src="figures/solutions/architecture_compare_plots/square_methods_vs_n_demos_x2.jpg" alt="Square at To=2" /><figcaption><b>(c)</b> square, T<sub>o</sub>=2</figcaption></figure>
+        <figure style="margin:0"><img src="figures/solutions/architecture_compare_plots/square_methods_vs_n_demos_x20.jpg" alt="Square at To=20" /><figcaption><b>(d)</b> square, T<sub>o</sub>=20</figcaption></figure>
+        <figure style="margin:0"><img src="figures/solutions/architecture_compare_plots/push_and_return_strong_methods_vs_n_demos_x4_A_no_legend.jpg" alt="Push-and-return at To=4" /><figcaption><b>(e)</b> push-and-return, T<sub>o</sub>=4</figcaption></figure>
+        <figure style="margin:0"><img src="figures/solutions/architecture_compare_plots/push_and_return_strong_methods_vs_n_demos_x80_A_no_legend.jpg" alt="Push-and-return at To=80" /><figcaption><b>(f)</b> push-and-return, T<sub>o</sub>=80</figcaption></figure>
+      </div>
+      <figcaption><span class="fignum">Figure 1.</span> Comparison of <b>UNet+Cross-Attention</b> and
+      <b>UNet+FiLM</b> across tasks, context lengths, and data scales. Across tasks, the two
+      architectures perform similarly at short context lengths, while <b>UNet+Cross-Attention</b>
+      outperforms <b>UNet+FiLM</b> at longer context lengths in limited-data regimes. As data is scaled,
+      the performance gap decreases, suggesting that cross-attention provides an inductive bias that
+      reduces the sample complexity of long-context policy learning. <b>DiT</b> is also shown as a
+      comparison, but often fails to perform without significant pre-training in the single-task
+      cases.</figcaption>
+    </figure>
+
+    <p>Additionally, the FiLM model size can be considerably different if context length is changed,
+    while the <b>UNet+Cross-Attention</b> policy is consistently at around 150M parameters. Thus, it
+    could be particularly concerning that one comparison we have made is at context length 80, where we
+    compared <b>UNet+FiLM</b> with about 235M parameters against <b>UNet+Cross-Attention</b> at 151M
+    parameters.</p>
+
+    <p>The comparison presented in Figure&nbsp;1 is such that the parameters in the intermediate layers
+    of the UNet are kept consistent between <b>FiLM</b> and <b>cross-attention</b> conditioning. That
+    is, we study what conditioning method is best for a given UNet of certain hyperparameters. However,
+    we now present a second comparison where we alter the size of the UNet layers to keep the total
+    number of parameters consistent with <b>UNet+Cross-Attention</b> at a given context length. We
+    present results in Figure&nbsp;2. Note that we added parameters for <b>push-T</b> and <b>square</b>
+    at <span class="m">T<sub>o</sub>=20</span>, and removed parameters for <b>push-and-return</b> at
+    <span class="m">T<sub>o</sub>=80</span>, to bring the total parameters similar to those of
+    cross-attention conditioning. We find no changes across tasks in the <span class="m">N/2</span>
+    data regime.</p>
+
+    <figure class="apx-fig">
+      <img src="figures/appendix/matching_parameter_comparison_pr_uses_strong.jpg" alt="Parameter-matched architecture comparison" />
+      <figcaption><span class="fignum">Figure 2.</span> Comparing policy architectures when total
+      parameters for the policy using FiLM conditioning are altered to match total parameters for the
+      cross-attention policy.</figcaption>
+    </figure>
+
+    <div class="apx-pager">
+      <span>&nbsp;</span>
+      <a href="appendix-variable-history.html">Variable History Training Ablations &rarr;</a>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>Anonymous submission &middot; under review</p>
+    </div>
+  </footer>
+</body>
+</html>
