@@ -16,9 +16,9 @@
     <nav class="sitenav" aria-label="Appendix navigation">
       <a href="index.html">Home</a>
       <span class="sep"></span>
-      <a href="appendix-cross-attention.html">Cross-Attention Conditioning</a>
-      <a href="appendix-variable-history.html" aria-current="page">Variable History Training Ablations</a>
-      <a href="appendix-grasp-short-context.html">Manipulation Primitive and Short Contexts</a>
+      <a href="cac.html">Cross-Attention Conditioning</a>
+      <a href="vht.html" aria-current="page">Variable History Training Ablations</a>
+      <a href="ac.html">Additional Comments</a>
       <a href="appendix-experiments-discussion.html">Additional Experiments and Discussion</a>
       <a href="appendix-policy-task-details.html">Policy and Task Details</a>
     </nav>
@@ -31,10 +31,8 @@
   </header>
 
   <main class="apx">
-    <p>In the main paper we show significant improvements in the <span class="m">N/2</span> data
-    regime, choosing <b>progressive</b> for <span class="m">&rho;<sub>i</sub></span> and <b>short</b>
-    past action prediction horizon. In Figure&nbsp;1, we show results for the <span class="m">N</span>
-    data regime as well as for other combinations.</p>
+    <p>In Figure&nbsp;1, we show results for all combinations of curriculum (<b>progressive</b> and <b>random sprinkle</b>) and past prediction length
+      (<b>short</b> and <b>full</b>).</p>
 
     <p>We note that <b>progressive+short</b> shows performance gains in the three tasks in the
     <span class="m">N/2</span> data regime. With <span class="m">N</span> trajectories, it shows
@@ -86,8 +84,8 @@
     scaling.</p>
 
     <div class="apx-pager">
-      <a href="appendix-cross-attention.html">&larr; Cross-Attention Conditioning</a>
-      <a href="appendix-grasp-short-context.html">Manipulation Primitive and Short Contexts &rarr;</a>
+      <a href="cac.html">&larr; Cross-Attention Conditioning</a>
+      <a href="ac.html">Additional Comments &rarr;</a>
     </div>
   </main>
 

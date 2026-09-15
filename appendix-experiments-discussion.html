@@ -16,9 +16,9 @@
     <nav class="sitenav" aria-label="Appendix navigation">
       <a href="index.html">Home</a>
       <span class="sep"></span>
-      <a href="appendix-cross-attention.html">Cross-Attention Conditioning</a>
-      <a href="appendix-variable-history.html">Variable History Training Ablations</a>
-      <a href="appendix-grasp-short-context.html">Manipulation Primitive and Short Contexts</a>
+      <a href="cac.html">Cross-Attention Conditioning</a>
+      <a href="vht.html">Variable History Training Ablations</a>
+      <a href="ac.html">Additional Comments</a>
       <a href="appendix-experiments-discussion.html" aria-current="page">Additional Experiments and Discussion</a>
       <a href="appendix-policy-task-details.html">Policy and Task Details</a>
     </nav>
@@ -122,7 +122,7 @@
       overall patterns are unclear.</figcaption>
     </figure>
 
-    <p>Next, we continue the discussion of the relative difference in policy learning between trainable
+    <!-- <p>Next, we continue the discussion of the relative difference in policy learning between trainable
     and frozen encoder. The main paper shows the comparison in the <span class="m">N/2</span> data
     regime; we show the <span class="m">N</span> data regime in Figure&nbsp;3. We find that at both
     data scales, past-action prediction and freezing the observation encoder seem to be driving each
@@ -137,7 +137,7 @@
       observation encoder (frozen from short context lengths) with past action prediction. Past-action
       prediction and frozen observation encoder seem to be driving each other&rsquo;s success, but
       <b>push-and-return</b> is an exception.</figcaption>
-    </figure>
+    </figure> -->
 
     <p>As a final note, Torne et al. (2025) also propose an inference-time verification technique, where
     multiple action chunks are sampled from the policy, and the chunk with past actions most consistent
@@ -219,7 +219,7 @@
     </ul>
 
     <div class="apx-pager">
-      <a href="appendix-grasp-short-context.html">&larr; Manipulation Primitive and Short Contexts</a>
+      <a href="ac.html">&larr; Additional Comments</a>
       <a href="appendix-policy-task-details.html">Policy and Task Details &rarr;</a>
     </div>
   </main>

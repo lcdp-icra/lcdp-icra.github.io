@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="robots" content="noindex" />
-  <title>Manipulation Primitive and Short Contexts</title>
+  <title>Additional Comments</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -16,9 +16,9 @@
     <nav class="sitenav" aria-label="Appendix navigation">
       <a href="index.html">Home</a>
       <span class="sep"></span>
-      <a href="appendix-cross-attention.html">Cross-Attention Conditioning</a>
-      <a href="appendix-variable-history.html">Variable History Training Ablations</a>
-      <a href="appendix-grasp-short-context.html" aria-current="page">Manipulation Primitive and Short Contexts</a>
+      <a href="cac.html">Cross-Attention Conditioning</a>
+      <a href="vht.html">Variable History Training Ablations</a>
+      <a href="ac.html" aria-current="page">Additional Comments</a>
       <a href="appendix-experiments-discussion.html">Additional Experiments and Discussion</a>
       <a href="appendix-policy-task-details.html">Policy and Task Details</a>
     </nav>
@@ -26,12 +26,17 @@
 
   <header class="apx-hero">
     <div class="container">
-      <h1>Manipulation Primitive and Short Contexts</h1>
+      <h1>Additional Comments</h1>
     </div>
   </header>
 
   <main class="apx">
-    <h2>A. Impact of Grasp as Manipulation Primitive</h2>
+    <nav class="apx-toc">
+      <a href="#grasp-primitive">A. Impact of Grasp as Manipulation Primitive</a>
+      <a href="#short-context">B. When are Short Context Lengths Sufficient?</a>
+    </nav>
+
+    <h2 id="grasp-primitive">A. Impact of Grasp as Manipulation Primitive</h2>
     <p>Tasks like <b>lift</b> and <b>grasp-and-return</b> show reasonable long-context performance even
     in the low data regime (<span class="m">N/2</span>). We speculate that this is because these tasks
     involve locally stable manipulation primitives, and policies can perform well despite errors in
@@ -72,7 +77,7 @@
     </table>
     </div>
 
-    <h2>B. When are Short Context Lengths Sufficient?</h2>
+    <h2 id="short-context">B. When are Short Context Lengths Sufficient?</h2>
     <p>We comment on the difference with respect to <b>manipulation completion</b> between
     short-context (<span class="m">T<sub>o</sub> &isin; {4, 8}</span>) policy performance on
     <b>push-and-return</b> vs. <b>grasp-and-return</b>. As expected, we notice good manipulation
@@ -102,7 +107,7 @@
     provide explicit sub-task guidance (e.g., via language).</p>
 
     <div class="apx-pager">
-      <a href="appendix-variable-history.html">&larr; Variable History Training Ablations</a>
+      <a href="vht.html">&larr; Variable History Training Ablations</a>
       <a href="appendix-experiments-discussion.html">Additional Experiments and Discussion &rarr;</a>
     </div>
   </main>
