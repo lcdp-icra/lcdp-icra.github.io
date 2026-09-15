@@ -189,7 +189,7 @@
     learning). Some RL works in robotics have provided explicit comments on context length.</p>
 
     <ul>
-      <li><b>Li et al. (2024)</b> use a context of 66 (2 seconds at 33&nbsp;Hz). Along with the entire
+      <li><b>Li et al. (2024a)</b> use a context of 66 (2 seconds at 33&nbsp;Hz). Along with the entire
       history provided as an encoded embedding, they provide the recent 4 frames directly to the base
       model, arguing that full history and recent history are used differently and therefore recent
       history should additionally be provided through separate channels.</li>
@@ -212,11 +212,27 @@
       <li><b>Liu et al. (2023)</b> show that LLM performance for long-context inputs significantly
       depends on the location of relevant information in the input. Specifically, performance degrades
       if the most relevant information is in the middle of the model input history.</li>
-      <li><b>Li et al. (2024)</b> create a benchmark for long-context understanding in LLMs and show
+      <li><b>Li et al. (2024b)</b> create a benchmark for long-context understanding in LLMs and show
       that LLMs struggle with &ldquo;intricate long dependency tasks&rdquo;.</li>
       <li><b>Qin et al. (2023)</b> show that certain attention mechanisms can lead to insufficient
       attention being paid to distant tokens in longer contexts.</li>
     </ul>
+    <h2 id="references">References</h2>
+    <ol class="apx-refs">
+      <li id="ref-diffusion_policy"><span class="ref-label">Chi et al. (2024)</span><span class="ref-body">C. Chi, Z. Xu, S. Feng, E. Cousineau, Y. Du, B. Burchfiel, et al., &ldquo;Diffusion Policy: Visuomotor Policy Learning via Action Diffusion,&rdquo; 2024. <a href="https://arxiv.org/abs/2303.04137" target="_blank" rel="noopener">https://arxiv.org/abs/2303.04137</a></span></li>
+      <li id="ref-kumar2021rmarapidmotoradaptation"><span class="ref-label">Kumar et al. (2021)</span><span class="ref-body">A. Kumar, Z. Fu, D. Pathak, and J. Malik, &ldquo;RMA: Rapid Motor Adaptation for Legged Robots,&rdquo; 2021. <a href="https://arxiv.org/abs/2107.04034" target="_blank" rel="noopener">https://arxiv.org/abs/2107.04034</a></span></li>
+      <li id="ref-li2024reinforcementlearningversatiledynamic"><span class="ref-label">Li et al. (2024a)</span><span class="ref-body">Z. Li, X. B. Peng, P. Abbeel, S. Levine, G. Berseth, and K. Sreenath, &ldquo;Reinforcement Learning for Versatile, Dynamic, and Robust Bipedal Locomotion Control,&rdquo; 2024. <a href="https://arxiv.org/abs/2401.16889" target="_blank" rel="noopener">https://arxiv.org/abs/2401.16889</a></span></li>
+      <li id="ref-li2024looglelongcontextlanguagemodels"><span class="ref-label">Li et al. (2024b)</span><span class="ref-body">J. Li, M. Wang, Z. Zheng, and M. Zhang, &ldquo;LooGLE: Can Long-Context Language Models Understand Long Contexts?,&rdquo; 2024. <a href="https://arxiv.org/abs/2311.04939" target="_blank" rel="noopener">https://arxiv.org/abs/2311.04939</a></span></li>
+      <li id="ref-liu2023lostmiddlelanguagemodels"><span class="ref-label">Liu et al. (2023)</span><span class="ref-body">N. F. Liu, K. Lin, J. Hewitt, A. Paranjape, M. Bevilacqua, F. Petroni, et al., &ldquo;Lost in the Middle: How Language Models Use Long Contexts,&rdquo; 2023. <a href="https://arxiv.org/abs/2307.03172" target="_blank" rel="noopener">https://arxiv.org/abs/2307.03172</a></span></li>
+      <li id="ref-mark2026bpplongcontextrobotimitation"><span class="ref-label">Mark et al. (2026)</span><span class="ref-body">M. S. Mark, J. Liang, M. Attarian, C. Fu, D. Dwibedi, D. Shah, et al., &ldquo;BPP: Long-Context Robot Imitation Learning by Focusing on Key History Frames,&rdquo; 2026. <a href="https://arxiv.org/abs/2602.15010" target="_blank" rel="noopener">https://arxiv.org/abs/2602.15010</a></span></li>
+      <li id="ref-Peng_2018"><span class="ref-label">Peng et al. (2018)</span><span class="ref-body">X. B. Peng, M. Andrychowicz, W. Zaremba, and P. Abbeel, &ldquo;Sim-to-Real Transfer of Robotic Control with Dynamics Randomization,&rdquo; <em>2018 IEEE International Conference on Robotics and Automation (ICRA)</em>, 2018. <a href="https://dx.doi.org/10.1109/ICRA.2018.8460528" target="_blank" rel="noopener">https://dx.doi.org/10.1109/ICRA.2018.8460528</a></span></li>
+      <li id="ref-Qin_2023"><span class="ref-label">Qin et al. (2023)</span><span class="ref-body">G. Qin, Y. Feng, and B. Van Durme, &ldquo;The NLP Task Effectiveness of Long-Range Transformers,&rdquo; <em>Proceedings of the 17th Conference of the European Chapter of the Association for Computational Linguistics</em>, 2023. <a href="https://dx.doi.org/10.18653/v1/2023.eacl-main.273" target="_blank" rel="noopener">https://dx.doi.org/10.18653/v1/2023.eacl-main.273</a></span></li>
+      <li id="ref-singh_2023"><span class="ref-label">Singh et al. (2023)</span><span class="ref-body">R. P. Singh, Z. Xie, P. Gergondet, and F. Kanehiro, &ldquo;Learning Bipedal Walking for Humanoids With Current Feedback,&rdquo; <em>IEEE Access</em>, 2023. <a href="https://dx.doi.org/10.1109/ACCESS.2023.3301175" target="_blank" rel="noopener">https://dx.doi.org/10.1109/ACCESS.2023.3301175</a></span></li>
+      <li id="ref-song2025historyguidedvideodiffusion"><span class="ref-label">Song et al. (2025)</span><span class="ref-body">K. Song, B. Chen, M. Simchowitz, Y. Du, R. Tedrake, and V. Sitzmann, &ldquo;History-Guided Video Diffusion,&rdquo; 2025. <a href="https://arxiv.org/abs/2502.06764" target="_blank" rel="noopener">https://arxiv.org/abs/2502.06764</a></span></li>
+      <li id="ref-sridhar2025memerscalingmemoryrobot"><span class="ref-label">Sridhar et al. (2025)</span><span class="ref-body">A. Sridhar, J. Pan, S. Sharma, and C. Finn, &ldquo;MemER: Scaling Up Memory for Robot Control via Experience Retrieval,&rdquo; 2025. <a href="https://arxiv.org/abs/2510.20328" target="_blank" rel="noopener">https://arxiv.org/abs/2510.20328</a></span></li>
+      <li id="ref-torne2025learninglongcontextdiffusionpolicies"><span class="ref-label">Torne et al. (2025)</span><span class="ref-body">M. Torne, A. Tang, Y. Liu, and C. Finn, &ldquo;Learning Long-Context Diffusion Policies via Past-Token Prediction,&rdquo; 2025. <a href="https://arxiv.org/abs/2505.09561" target="_blank" rel="noopener">https://arxiv.org/abs/2505.09561</a></span></li>
+      <li id="ref-torne2026memmultiscaleembodiedmemory"><span class="ref-label">Torne et al. (2026)</span><span class="ref-body">M. Torne, K. Pertsch, H. Walke, K. Vedder, S. Nair, B. Ichter, et al., &ldquo;MEM: Multi-Scale Embodied Memory for Vision Language Action Models,&rdquo; 2026. <a href="https://arxiv.org/abs/2603.03596" target="_blank" rel="noopener">https://arxiv.org/abs/2603.03596</a></span></li>
+    </ol>
 
     <div class="apx-pager">
       <a href="ac.html">&larr; Additional Comments</a>
