@@ -33,10 +33,16 @@
   <main class="apx">
     <p>In the main paper we establish the importance of architectural choice when comparing diffusion
     policy performance, especially at longer context lengths. Here we present additional results
-    organized by different data scales at a given context length in Figure&nbsp;1. While <b>DiT</b>
+    organized by different data scales and at both short and long context lengths in Figure&nbsp;1. While <b>Chi-Transformer-M</b>
     shows no noticeable performance gain even in the high data regime, the performance gap between
     <b>UNet+Cross-Attention</b> and <b>UNet+FiLM</b> shrinks as data is scaled. This reinforces the
-    notion that the cross-attention conditioning method is a favorable inductive bias.</p>
+    notion that the cross-attention conditioning method is a favorable inductive bias for the UNets, which are already known
+    to perform well for single task image based policies.</p>
+
+    <p> A particularly interesting thing to note in Figure&nbsp;1 is that <b>Chi-Transformer-M</b> shows a significant drop in performance
+    as context length is increased from short to long. This drop is less stark in <b>UNet+FiLM</b> and least prominant in 
+    <b>UNet+Cross-Attention</b>. In the high data regime, the performance gap between context lengths is negligible for <b>UNet+Cross-Attention</b>
+    especially in the high data regime.</p>
 
     <figure class="apx-fig">
       <img src="figures/solutions/architecture_compare_plots/title_legend.jpg" alt="Legend" style="max-width:520px;margin:0 auto 14px;border:none;" />
@@ -53,7 +59,7 @@
       architectures perform similarly at short context lengths, while <b>UNet+Cross-Attention</b>
       outperforms <b>UNet+FiLM</b> at longer context lengths in limited-data regimes. As data is scaled,
       the performance gap decreases, suggesting that cross-attention provides an inductive bias that
-      reduces the sample complexity of long-context policy learning. <b>DiT</b> is also shown as a
+      reduces the sample complexity of long-context policy learning. <b>Chi-Transformer-M</b> is also shown as a
       comparison, but often fails to perform without significant pre-training in the single-task
       cases.</figcaption>
     </figure>
