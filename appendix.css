@@ -158,7 +158,7 @@
 }
 
 /* Two section links at the top of a page */
-.apx-toc { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 26px; }
+.apx-toc { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin: 0 0 26px; }
 .apx-toc a {
   font-size: 0.88rem;
   font-weight: 600;
