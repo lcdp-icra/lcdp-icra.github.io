@@ -53,7 +53,7 @@
     each of these images into latent embeddings. <em>Note that the same vision backbone is used for
     all timesteps for each camera stream.</em> These embeddings, concatenated with the diffusion
     timestep embedding and robot proprioception, are passed to the downstream model for conditioning.
-    Common choices for the downstream conditioning model are <b>UNet</b> and <b>DiT</b>. Various
+    Common choices for the downstream conditioning model are <b>UNet</b> and <b>Transformer</b>. Various
     methods like FiLM (Perez et al., 2017) and cross-attention can be applied to merge the
     conditioning with the denoiser.</p>
 
@@ -62,9 +62,9 @@
     scratch for our policies, with random weight initialization.</p>
 
     <h2>B. Comparison of Diffusion Policy Architectures</h2>
-    <p>Diffusion Policy was presented with the <b>UNet+FiLM</b> and <b>DiT</b> architectures in the
+    <p>Diffusion Policy was presented with the <b>UNet+FiLM</b> and <b>Chi-Transformer</b> architectures in the
     original work. For single-task RGB policies with short context lengths, <b>UNet+FiLM</b>
-    outperformed the <b>DiT</b> model for the given design choices and hyperparameters. Therefore, it
+    outperformed the <b>Chi-Transformer</b> model for the given design choices and hyperparameters. Therefore, it
     became the choice for many works building on diffusion policy. In this work, we suggest using
     <b>UNet+Cross-Attention</b> as the method for training single-task long-context diffusion policies
     from scratch in the limited-data regime.</p>
@@ -86,11 +86,11 @@
       embedding is projected to matching dimension. A position encoding is added. Each of these
       embeddings is then individually projected to intermediate UNet layer dimensions, and
       cross-attended to with the intermediate UNet layers.</li>
-      <li><b>DiT</b>: The action denoising backbone is now provided by transformer decoder layers as
+      <li><b>Chi-Transformer</b>: The action denoising backbone is now provided by transformer decoder layers as
       opposed to UNet. Conditioning is merged via cross-attention.</li>
     </ul>
 
-    <p>We note that the <b>DiT</b> model from the original work, as well as from key long-context
+    <p>We note that the <b>Chi-Transformer</b> model from the original work, as well as from key long-context
     learning work from Torne et al. (2025), uses hyperparameters which result in a model significantly
     smaller in size than other choices. If we use their hyperparameters, we notice extremely low
     success rates in some tasks even with short context lengths. Very specifically, we notice
@@ -98,11 +98,11 @@
     implemented in Drake. We therefore add more decoder layers, providing the model a number of
     parameters similar in magnitude to the other architectures we have used.</p>
 
-    <p>Moreover, a key change in our experiments for <b>DiT</b> is not using causal attention within
+    <p>Moreover, a key change in our experiments for <b>Chi-Transformer</b> is not using causal attention within
     the action chunk. Both Chi et al. (2024) and Torne et al. (2025) apply causal attention within an
     action chunk as it is denoised (so earlier elements of the action chunk cannot be influenced by
     later elements). We remove this flag, to make the flow of information more comparable to that of
-    the <b>UNet</b>. Finally, we evaluate the <b>DiT</b> with additional steps of sampling compared to
+    the <b>UNet</b>. Finally, we evaluate the <b>Chi-Transformer</b> with additional steps of sampling compared to
     the UNet models, to eliminate the possibility of sampling error driving the difference in
     performance.</p>
 
@@ -110,52 +110,20 @@
     cross-attention instead of FiLM has been used in computer vision before (Rombach et al., 2022).</p>
 
     <h2>C. Training Details and Hyperparameters</h2>
-    <h3>C.1 Checkpoint Selection</h3>
-    <p>We designate a maximum number of training steps for each task based on approximate policy
-    performance to convergence for short-context policies at <span class="m">N</span> training
-    trajectories. We then train policies with all context lengths for that task to those many training
-    steps, saving the top 5 checkpoints with respect to validation loss, the top 5 checkpoints with
-    respect to action-matching validation loss, and 3 evenly spaced checkpoints toward the end of
-    training. We then evaluate each checkpoint, and the highest success rate among checkpoints is
-    reported as the success rate for the training run. For our hardware evaluation on the
-    <b>marshmallows</b> task, we simply use the latest checkpoint.</p>
-
-    <p>We train all <b>push-T</b> policies for 150k steps; <b>marshmallows</b>, <b>square</b>,
-    <b>lift</b>, and <b>push-and-return</b> policies for 200k steps; and <b>grasp-and-return</b>
-    policies for 100k steps. We start with a learning rate of <code>1e-4</code> and use
-    <code>cosine</code> decay. For some policies (like <b>UNet+FiLM</b> and <b>UNet+Cross-Attention</b>
-    on <b>push-T</b>, and <b>UNet+FiLM</b> on <b>push-and-return</b>), we only save the latest
-    checkpoint as opposed to 3 recent toward the end, because the results are largely insensitive to
-    this choice and we did not rerun these configurations due to the high computational cost. We did
-    rerun it for the <span class="m">N</span> data regime in <b>push-and-return</b> for
-    <b>UNet+FiLM</b>, and found the presented trends to be consistent.</p>
-
-    <p>We notice in our work that policies with different context lengths can sometimes converge in a
-    different number of training steps. For instance, we usually notice that especially with
-    <span class="m">N/2</span> trajectories, some policies often converge slightly sooner than those
-    for <span class="m">N</span> and <span class="m">2N</span> &mdash; an effect that is more pronounced
-    at longer context lengths. We believe earlier checkpoints at longer context lengths in the low
-    data regime help mitigate the impact of over-fitting.</p>
-
-    <p>Each reported success rate is from one training run. While we do account for uncertainty in the
-    binary task success, we do not, in this work, account for uncertainty in training randomness. Due
-    to limited availability of resources and the high amount of training time needed to produce a study
-    of this magnitude, such a choice is consistent with prior work.</p>
-
-    <h3>C.2 Hyperparameters</h3>
+    <h3>C.1 Hyperparameters</h3>
     <p>In Table&nbsp;1 we present the hyperparameters used for the main results. By design, FiLM
     conditioning model size changes considerably as context length is increased. On the contrary,
-    <b>UNet+Cross-Attention</b> and <b>DiT</b> have similar model sizes across context lengths due to
+    <b>UNet+Cross-Attention</b> and <b>Chi-Transformer-M</b> have similar model sizes across context lengths due to
     the manner of applying conditioning. We choose the size of the cross-attention model to be roughly
-    halfway between the smallest and largest used FiLM model. For <b>DiT</b>, we get a model comparable
-    in size to the cross-attention model after adding significantly more layers.</p>
+    halfway between the smallest and largest used FiLM model. <b>Chi-Transformer-M</b> is derived from 
+    <b>Chi-Transformer</b> by adding more layers, higher embedding dimension, and removing causal attention.</p>
 
     <div class="apx-tablewrap">
     <table>
       <caption><span class="fignum">Table 1.</span> Architecture-specific hyperparameters for the three
       denoisers. Values not applicable to a given architecture are marked &ldquo;&ndash;&rdquo;.</caption>
       <thead>
-        <tr><th></th><th class="num">UNet+FiLM</th><th class="num">UNet+xAttn</th><th class="num">DiT</th></tr>
+        <tr><th></th><th class="num">UNet+FiLM</th><th class="num">UNet+xAttn</th><th class="num">Chi-Transformer-M</th></tr>
       </thead>
       <tbody>
         <tr class="grouprow"><td colspan="4">Denoiser core</td></tr>
