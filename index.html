@@ -89,7 +89,7 @@
         <div class="flow">
           <div class="merge">+ other tokens (proprioception, timestep, &hellip;)</div>
           <div class="down">&darr;</div>
-          <div class="policy-box">Policy<small>Denoising backbone &middot; UNet / DiT</small></div>
+          <div class="policy-box">Policy<small>Denoising backbone &middot; UNet / Chi-Transformer-M</small></div>
           <div class="down">&darr;</div>
           <div class="actions-out">robot actions</div>
         </div>
@@ -123,7 +123,7 @@
         architecture as well as hyper-parameter changes for other architectures. We used 100 demos for this task.</p>
       <div class="hw">
         <div class="vid"><video class="with-controls" src="videos/hardware_unet_cross_success.mp4" autoplay loop muted playsinline></video></div>
-        <div class="hw-plot"><img src="media/plots/hardware_marshmallows.jpg" alt="Marshmallows hardware success rate by architecture: UNet+Cross-Attention, UNet+FiLM, DiT"></div>
+        <div class="hw-plot"><img src="media/plots/hardware_marshmallows.jpg" alt="Marshmallows hardware success rate by architecture: UNet+Cross-Attention, UNet+FiLM, Chi-Transformer-M"></div>
       </div>
 
     </div>
@@ -138,7 +138,7 @@
 
       <!-- Architecture subsection -->
       <h3 class="block-title">Architecture</h3>
-      <p class="sec-lead">We compare two action denoising backbones &mdash; <b>UNet</b> and <b>DiT</b> &mdash; and for
+      <p class="sec-lead">We compare two action denoising backbones &mdash; <b>UNet</b> and <b>Chi-Transformer-M</b> &mdash; and for
         the UNet, two conditioning methods &mdash; <b>Cross-Attention</b> and <b>FiLM</b>.</p>
 
       <div class="arch-diagram">
@@ -150,8 +150,8 @@
             <div class="arch-hint">hover for conditioning methods &darr;</div>
           </figure>
           <figure class="arch-card">
-            <div class="arch-img"><img src="media/arch/dit.png" alt="DiT denoising backbone"></div>
-            <figcaption>DiT</figcaption>
+            <div class="arch-img"><img src="media/arch/dit.png" alt="Chi-Transformer-M denoising backbone"></div>
+            <figcaption>Chi-Transformer-M</figcaption>
           </figure>
         </div>
 
@@ -171,13 +171,13 @@
       </div>
 
       <div class="arch-takeaways">
-        <div class="arch-take"><span class="arch-take-k">a</span><span><b>In the single-task, training-from-scratch case, UNet is the better backbone</b> &mdash; it outperforms DiT even after favorable hyper-parameter changes.</span></div>
+        <div class="arch-take"><span class="arch-take-k">a</span><span><b>In the single-task, training-from-scratch case, UNet is the better backbone</b> &mdash; it outperforms Chi-Transformer-M even after favorable hyper-parameter changes.</span></div>
         <div class="arch-take"><span class="arch-take-k">b</span><span><b>Cross-attention conditioning especially helps in the limited-data regime.</b></span></div>
       </div>
 
       <figure class="vh-fig">
-        <img src="media/plots/architecture_compare.jpg" alt="UNet+Cross-Attention vs UNet+FiLM vs DiT success rates across Push-T, Square, Push-and-Return at the N/2 and N data scales">
-        <figcaption>Figure 7 &mdash; UNet+Cross-Attention vs. UNet+FiLM vs. DiT, at the N/2 and N data scales.</figcaption>
+        <img src="media/plots/architecture_compare.jpg" alt="UNet+Cross-Attention vs UNet+FiLM vs Chi-Transformer-M success rates across Push-T, Square, Push-and-Return at the N/2 and N data scales">
+        <figcaption>Figure 7 &mdash; UNet+Cross-Attention vs. UNet+FiLM vs. Chi-Transformer-M, at the N/2 and N data scales.</figcaption>
       </figure>
 
       <div class="divider"></div>
